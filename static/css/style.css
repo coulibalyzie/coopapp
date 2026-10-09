@@ -1,6 +1,6 @@
-#--------------------------------------------------
+/*--------------------------------------------------
 #dashboard pages styles
-#--------------------------------------------------
+--------------------------------------------------*/
 body {
     margin: 0;
     font-family: Arial, sans-serif;
@@ -964,6 +964,7 @@ input:focus {
     width: max-content;
     min-width: 100%;
     border-collapse: collapse;
+    overflow-x:auto;
 }
 
 /* Cellules du tableau */
@@ -1377,4 +1378,732 @@ input:focus {
     flex:1;
     height:2px;
     background:#ececec;
+}
+
+/* ==========================
+   RESPONSIVE DESIGN
+   *========================== */
+/* ==================================================
+   CORRECTIF RESPONSIVE GLOBAL
+================================================== */
+
+:root {
+    --sidebar-width: 250px;
+    --mobile-sidebar-width: min(85vw, 320px);
+    --light-green: rgba(255, 255, 255, 0.18);
+}
+
+/* Modèle de dimensionnement plus prévisible */
+*,
+*::before,
+*::after {
+    box-sizing: border-box;
+}
+
+html,
+body {
+    width: 100%;
+    min-height: 100%;
+    height: auto;
+    margin: 0;
+    padding: 0;
+
+    /* Empêche uniquement le débordement horizontal global */
+    overflow-x: hidden;
+    overflow-y: auto;
+}
+
+body {
+    font-family: Arial, sans-serif;
+    background: #f4f6f9;
+}
+
+/* Médias responsives */
+img,
+svg,
+video,
+canvas {
+    max-width: 100%;
+}
+
+/* Empêche les champs de dépasser de leur conteneur */
+input,
+select,
+textarea,
+button {
+    max-width: 100%;
+    font: inherit;
+}
+
+/* Amélioration de l'accessibilité clavier */
+a:focus-visible,
+button:focus-visible,
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible {
+    outline: 3px solid rgba(250, 137, 39, 0.4);
+    outline-offset: 2px;
+}
+
+
+/* ==================================================
+   LAYOUT PRINCIPAL
+================================================== */
+
+.dashboard-layout,
+.layout {
+    display: flex;
+    width: 100%;
+
+    /* Fallback puis unité adaptée aux navigateurs mobiles */
+    height: 100vh;
+    height: 100dvh;
+    min-height: 100vh;
+    min-height: 100dvh;
+
+    overflow: hidden;
+}
+
+.sidebar {
+    flex: 0 0 var(--sidebar-width);
+    width: var(--sidebar-width);
+    min-width: var(--sidebar-width);
+
+    height: 100vh;
+    height: 100dvh;
+
+    overflow-y: auto;
+    overflow-x: hidden;
+
+    transition: transform 0.25s ease;
+    scrollbar-width: thin;
+}
+
+.sidebar-nav {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+.main {
+    flex: 1 1 auto;
+
+    /* Important dans une disposition flex */
+    min-width: 0;
+    width: calc(100% - var(--sidebar-width));
+    max-width: 100%;
+
+    height: 100vh;
+    height: 100dvh;
+
+    padding: clamp(12px, 2vw, 24px);
+
+    /* La zone principale devient scrollable */
+    overflow-y: auto;
+
+    /* Sécurité pour les tableaux non encore enveloppés */
+    overflow-x: auto;
+
+    -webkit-overflow-scrolling: touch;
+    overscroll-behavior: contain;
+}
+
+.container {
+    width: 100%;
+    min-height: 100vh;
+    min-height: 100dvh;
+    height: auto;
+    padding: 20px;
+}
+
+
+/* ==================================================
+   EN-TÊTES ET BARRES D'ACTIONS
+================================================== */
+
+.dashboard-header {
+    width: 100%;
+    max-width: 100%;
+    padding: clamp(16px, 3vw, 35px);
+    margin-bottom: clamp(20px, 3vw, 35px);
+}
+
+.topbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 16px;
+}
+
+.header-left,
+.header-center,
+.profile-menu {
+    min-width: 0;
+}
+
+.header-center {
+    flex: 1 1 280px;
+}
+
+.search-bar {
+    width: min(100%, 400px);
+    max-width: 100%;
+}
+
+.actions-bar {
+    flex-wrap: wrap;
+}
+
+.m-search {
+    min-width: 0;
+}
+
+.m-search form {
+    width: 100%;
+}
+
+.m-search input {
+    width: min(100%, 350px);
+    min-width: 0;
+}
+
+.export-buttons {
+    display: flex;
+    flex-wrap: wrap;
+}
+
+
+/* ==================================================
+   GRILLES RESPONSIVES
+================================================== */
+
+.cards {
+    grid-template-columns:
+        repeat(auto-fit, minmax(min(100%, 220px), 1fr));
+}
+
+.charts {
+    grid-template-columns:
+        repeat(auto-fit, minmax(min(100%, 280px), 1fr));
+}
+
+.quick-grid {
+    grid-template-columns:
+        repeat(auto-fit, minmax(min(100%, 220px), 1fr));
+}
+
+.info-grid {
+    grid-template-columns:
+        repeat(auto-fit, minmax(min(100%, 200px), 1fr));
+}
+
+.stock-summary,
+.stock-dashboard,
+.stock-form {
+    grid-template-columns:
+        repeat(auto-fit, minmax(min(100%, 220px), 1fr));
+}
+
+.stats-grid-client-pisteur,
+.stats-grid-stock {
+    grid-template-columns:
+        repeat(auto-fit, minmax(min(100%, 250px), 1fr));
+}
+
+/* Empêche les enfants des grilles de forcer un débordement */
+.cards > *,
+.charts > *,
+.quick-grid > *,
+.info-grid > *,
+.stock-summary > *,
+.stock-dashboard > *,
+.stock-form > *,
+.stats-grid > *,
+.stats-grid-stock > *,
+.stats-grid-client-pisteur > * {
+    min-width: 0;
+}
+
+
+/* ==================================================
+   CARTES ET TEXTES
+================================================== */
+
+.card,
+.chart-card,
+.stat-card,
+.stock-card,
+.quick-card,
+.card_settings,
+.profile-card,
+.fiche-header,
+.campaign-stats {
+    max-width: 100%;
+    overflow-wrap: anywhere;
+}
+
+/* Évite les barres de défilement dans chaque carte */
+.card {
+    overflow: hidden;
+}
+
+.card select,
+.info-item select {
+    max-width: 100%;
+}
+
+
+/* ==================================================
+   GRAPHIQUES
+================================================== */
+
+.chart-card {
+    width: 100%;
+    height: auto;
+    min-height: 280px;
+    overflow: hidden;
+}
+
+.chart-card canvas {
+    display: block;
+    width: 100% !important;
+    max-width: 100% !important;
+    height: clamp(220px, 30vw, 280px) !important;
+}
+
+
+/* ==================================================
+   FORMULAIRES
+================================================== */
+
+.form input,
+.form select,
+.form textarea,
+.form-row input,
+.form-row select,
+.stock-form input,
+.stock-form select {
+    min-width: 0;
+}
+
+.form-group input,
+.form-group select,
+.form-group textarea {
+    width: 100%;
+}
+
+.form-row {
+    display: grid;
+    grid-template-columns: minmax(130px, 200px) minmax(0, 1fr);
+    align-items: center;
+    gap: 15px;
+}
+
+.form-row label {
+    width: auto;
+    margin: 0;
+}
+
+.stock-filter {
+    max-width: 100%;
+}
+
+.stock-filter input,
+.stock-filter select {
+    max-width: 100%;
+}
+
+
+/* ==================================================
+   TABLEAUX RESPONSIVES
+================================================== */
+
+/*
+   Tous les tableaux larges doivent être placés dans
+   .table-container ou .table-responsive.
+*/
+.table-container,
+.table-responsive {
+    display: block;
+    width: 100%;
+    max-width: 100%;
+
+    overflow-x: auto;
+    overflow-y: hidden;
+
+    -webkit-overflow-scrolling: touch;
+    overscroll-behavior-inline: contain;
+}
+
+.table-container > table,
+.table-responsive > table {
+    width: max-content;
+    min-width: 100%;
+}
+
+/* Le tableau de stock conserve sa largeur nécessaire */
+.table-container > .stock-table,
+.table-responsive > .stock-table {
+    min-width: 1300px;
+}
+
+.table,
+.table-fiche-client,
+.table-fiche-pisteur,
+.stock-table {
+    max-width: none;
+    overflow-x: auto;
+}
+
+
+/* ==================================================
+   MENU MOBILE
+================================================== */
+
+.mobile-menu-btn {
+    display: none;
+    align-items: center;
+    justify-content: center;
+
+    width: 44px;
+    height: 44px;
+    flex: 0 0 44px;
+
+    padding: 0;
+    border: none;
+    border-radius: 10px;
+
+    background: #fa8927;
+    color: #fff;
+
+    font-size: 24px;
+    cursor: pointer;
+}
+
+.sidebar-overlay {
+    display: none;
+}
+
+
+/* ==================================================
+   ÉCRANS INTERMÉDIAIRES
+================================================== */
+
+@media (max-width: 1200px) {
+    .campaign-stats .stats-grid {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+
+    .stats-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+}
+
+
+/* ==================================================
+   TABLETTES ET PETITS ORDINATEURS
+================================================== */
+
+@media (max-width: 992px) {
+    .dashboard-layout,
+    .layout {
+        display: block;
+    }
+
+    /* La sidebar devient un menu latéral masqué */
+    .sidebar {
+        position: fixed;
+        z-index: 1000;
+        top: 0;
+        bottom: 0;
+        left: 0;
+
+        width: var(--mobile-sidebar-width);
+        min-width: 0;
+        height: 100vh;
+        height: 100dvh;
+
+        padding-bottom:
+            calc(20px + env(safe-area-inset-bottom));
+
+        transform: translateX(-105%);
+        box-shadow: 10px 0 30px rgba(0, 0, 0, 0.2);
+    }
+
+    body.sidebar-open .sidebar {
+        transform: translateX(0);
+    }
+
+    .sidebar-overlay {
+        display: block;
+        position: fixed;
+        z-index: 999;
+        inset: 0;
+
+        background: rgba(0, 0, 0, 0.45);
+
+        opacity: 0;
+        visibility: hidden;
+        pointer-events: none;
+
+        transition:
+            opacity 0.25s ease,
+            visibility 0.25s ease;
+    }
+
+    body.sidebar-open .sidebar-overlay {
+        opacity: 1;
+        visibility: visible;
+        pointer-events: auto;
+    }
+
+    .mobile-menu-btn {
+        display: inline-flex;
+    }
+
+    .main {
+        width: 100%;
+        max-width: 100%;
+        height: 100vh;
+        height: 100dvh;
+    }
+}
+
+
+/* ==================================================
+   MOBILES
+================================================== */
+
+@media (max-width: 768px) {
+    .main {
+        padding: 14px;
+    }
+
+    .dashboard-header,
+    .profile-card,
+    .fiche-header,
+    .campaign-stats,
+    .card_settings {
+        padding: 18px;
+        border-radius: 12px;
+    }
+
+    /* La recherche passe sous le titre */
+    .header-center {
+        order: 3;
+        flex: 1 1 100%;
+        width: 100%;
+    }
+
+    .search-bar {
+        width: 100%;
+    }
+
+    /* Barres d'actions verticales */
+    .actions-bar,
+    .filter-form,
+    .stock-filter {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 12px;
+    }
+
+    .actions-bar > *,
+    .filter-form > *,
+    .stock-filter > * {
+        width: 100%;
+    }
+
+    .m-search form {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .m-search input,
+    .m-search button,
+    .stock-filter input,
+    .stock-filter select,
+    .stock-filter button {
+        width: 100%;
+        min-width: 0;
+    }
+
+    .export-buttons {
+        width: 100%;
+    }
+
+    .export-buttons > a {
+        flex: 1 1 140px;
+        text-align: center;
+    }
+
+    /* Formulaires sur une seule colonne */
+    .form {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .form > input,
+    .form > select,
+    .form > button {
+        width: 100%;
+    }
+
+    .form-row {
+        grid-template-columns: 1fr;
+        gap: 7px;
+    }
+
+    .form-actions {
+        flex-wrap: wrap;
+        gap: 10px;
+    }
+
+    /* Informations des fiches */
+    .fiche-info {
+        grid-template-columns: 1fr;
+        gap: 15px;
+        padding: 15px;
+    }
+
+    .info-item {
+        min-width: 0;
+    }
+
+    /* Statistiques */
+    .campaign-stats .stats-grid,
+    .stats-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    /* Tableaux plus compacts */
+    .table th,
+    .table td,
+    .table-fiche-client th,
+    .table-fiche-client td,
+    .table-fiche-pisteur th,
+    .table-fiche-pisteur td {
+        padding: 10px 12px;
+        font-size: 13px;
+    }
+
+    .chart-card {
+        min-height: 260px;
+    }
+
+    .chart-card canvas {
+        height: 220px !important;
+    }
+
+    .section-title h2 {
+        font-size: 25px;
+    }
+
+    .section-accent {
+        height: 45px;
+    }
+}
+
+
+/* ==================================================
+   PETITS MOBILES
+================================================== */
+
+@media (max-width: 560px) {
+    .main {
+        padding: 10px;
+    }
+
+    .dashboard-header,
+    .profile-card,
+    .fiche-header,
+    .campaign-stats,
+    .card_settings,
+    .stock-card {
+        padding: 15px;
+    }
+
+    .stats-grid,
+    .stats-grid-stock,
+    .stats-grid-client-pisteur,
+    .campaign-stats .stats-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .form-actions,
+    .export-buttons {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .form-actions > *,
+    .export-buttons > * {
+        width: 100%;
+        text-align: center;
+    }
+
+    .profile-info {
+        display: none;
+    }
+
+    .profile-avatar {
+        width: 38px;
+        height: 38px;
+    }
+
+    .profile-btn {
+        padding: 7px;
+    }
+
+    .dropdown-menu {
+        position: fixed;
+        top: auto;
+        right: 10px;
+        left: 10px;
+        width: auto;
+    }
+
+    .profile-photo,
+    .profile-photo-placeholder {
+        width: 110px;
+        height: 110px;
+    }
+
+    .section-title {
+        gap: 10px;
+    }
+
+    .section-title h2 {
+        font-size: 21px;
+    }
+
+    .section-title p {
+        font-size: 13px;
+    }
+
+    .stock-card p {
+        font-size: 28px;
+    }
+
+    .stat-card p,
+    .stat-card-client-pisteur p {
+        font-size: 26px;
+    }
+}
+
+
+/* ==================================================
+   ACCESSIBILITÉ : RÉDUIRE LES ANIMATIONS
+================================================== */
+
+@media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+        scroll-behavior: auto !important;
+        transition-duration: 0.01ms !important;
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+    }
 }

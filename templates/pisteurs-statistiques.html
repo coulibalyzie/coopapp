@@ -2,7 +2,7 @@
 <html lang="fr">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
     <title>Statistiques pisteurs</title>
 
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
@@ -13,7 +13,7 @@
 <!-- SIDEBAR -->
 <div class="dashboard-layout">
         
-        <aside class="sidebar">
+        <aside class="sidebar" id="sidebar">
             <div class="sidebar-header">
                 <div class="sidebar-logo">
                     <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
@@ -111,9 +111,23 @@
     <!-- MAIN -->
     <main class="main">
 
+        <div
+            class="sidebar-overlay"
+            id="sidebarOverlay"
+            aria-hidden="true"
+        ></div>
         <!-- TOPBAR -->
         <div class="topbar">
-
+            <button
+                type="button"
+                class="mobile-menu-btn"
+                id="mobileMenuButton"
+                aria-label="Ouvrir le menu"
+                aria-controls="sidebar"
+                aria-expanded="false"
+            >
+                ☰
+            </button>
             <div class="header-left">
                 <h1>Statistiques Pisteurs</h1>
                 <p>Gestion des statistiques des pisteurs</p>
@@ -244,4 +258,69 @@
 </div>
 
 </body>
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+    const menuButton = document.getElementById("mobileMenuButton");
+    const overlay = document.getElementById("sidebarOverlay");
+    const sidebar = document.getElementById("sidebar");
+
+    if (!menuButton || !overlay || !sidebar) {
+        return;
+    }
+
+    function setMenuState(isOpen) {
+        document.body.classList.toggle("sidebar-open", isOpen);
+
+        menuButton.setAttribute(
+            "aria-expanded",
+            String(isOpen)
+        );
+
+        menuButton.setAttribute(
+            "aria-label",
+            isOpen ? "Fermer le menu" : "Ouvrir le menu"
+        );
+
+        overlay.setAttribute(
+            "aria-hidden",
+            String(!isOpen)
+        );
+    }
+
+    menuButton.addEventListener("click", function () {
+        const isOpen =
+            document.body.classList.contains("sidebar-open");
+
+        setMenuState(!isOpen);
+    });
+
+    overlay.addEventListener("click", function () {
+        setMenuState(false);
+    });
+
+    /* Fermer après la sélection d'un lien sur mobile */
+    sidebar.querySelectorAll("a").forEach(function (link) {
+        link.addEventListener("click", function () {
+            if (window.innerWidth <= 992) {
+                setMenuState(false);
+            }
+        });
+    });
+
+    /* Fermer avec la touche Échap */
+    document.addEventListener("keydown", function (event) {
+        if (event.key === "Escape") {
+            setMenuState(false);
+        }
+    });
+
+    /* Réinitialiser en repassant sur un écran large */
+    window.addEventListener("resize", function () {
+        if (window.innerWidth > 992) {
+            setMenuState(false);
+        }
+    });
+});
+</script>
+
 </html>

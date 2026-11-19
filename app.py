@@ -2564,8 +2564,8 @@ def add_stock():
     produit = request.form["produit"]
     type_mouvement = request.form["type_mouvement"]
     date_mouvement = request.form["date_mouvement"]
-    quantite_poids = request.form["quantite_poids"]
-    nombre_sacs = request.form["nombre_sacs"]
+    quantite_poids = int(request.form["quantite_poids"].replace(" ", ""))
+    nombre_sacs = int(request.form["nombre_sacs"].replace(" ", ""))
     campagne = request.form["campagne"]
 
     conn = get_db_connection()
@@ -2602,8 +2602,8 @@ def edit_stock(id):
 def update_stock(id):
     produit = request.form["produit"]
     type_mouvement = request.form["type_mouvement"]
-    quantite_poids = request.form["quantite_poids"]
-    nombre_sacs = request.form["nombre_sacs"]
+    quantite_poids = int(request.form["quantite_poids"].replace(" ",""))
+    nombre_sacs = int(request.form["nombre_sacs"].replace(" ",""))
     date_mouvement = request.form["date_mouvement"]
     campagne = request.form["campagne"]
     created_at = request.form["created_at"]

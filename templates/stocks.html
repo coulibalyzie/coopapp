@@ -297,7 +297,8 @@
                             <option value="" disabled selected>Choisir un produit</option>
                             <option value="cajou">cajou</option>
                             <option value="karite">karite</option>
-                            <option value="riz">riz</option>
+                            <option value="riz pilé">riz pilé</option>
+                            <option value="riz padi">riz padi</option>
                             <option value="soja">soja</option>
                             <option value="maïs">maïs</option>
                             <option value="sacherie">sacherie</option>
@@ -339,13 +340,13 @@
 
                         <select name="produit">
                             <option value="">Tous les produits</option>
-
-                            {% for p in produits %}
-                                <option value="{{ p.produit }}"
-                                    {% if produit_selected == p.produit %}selected{% endif %}>
-                                    {{ p.produit }}
-                                </option>
-                            {% endfor %}
+                            <option value="cajou">cajou</option>
+                            <option value="karite">karite</option>
+                            <option value="riz pilé">riz pilé</option>
+                            <option value="riz padi">riz padi</option>
+                            <option value="soja">soja</option>
+                            <option value="maïs">maïs</option>
+                            <option value="sacherie">sacherie</option> 
                         </select>
 
                         <select name="campagne">

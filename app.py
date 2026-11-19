@@ -604,8 +604,8 @@ def update_client(id):
     conn.commit()
     flash("Client modifié avec succès ✅", "success")
     return redirect("/clients")
-@app.route("/clients/select/<string:nom>", methods = ["GET"])
-def select_client(nom):
+@app.route("/clients/select/<string:nom>/<string:campagne>", methods = ["GET"])
+def select_client(nom, campagne):
     if "user" not in session:
         return redirect("/")
     search = request.args.get("search", "").strip()
@@ -614,57 +614,50 @@ def select_client(nom):
     cursor = conn.cursor(dictionary=True, buffered= True)
 
     # =========================================================
-    # 1. Récupérer les campagnes disponibles pour CE client
+    # 1. Récupérer les informations générales du client
     # =========================================================
     cursor.execute("""
-    SELECT DISTINCT campagne
-    FROM fiche_client
-    WHERE client = %s 
-    ORDER BY campagne DESC""", 
-    (nom,))
+        SELECT *
+        FROM client
+        WHERE nom = %s 
+        AND campagne = %s
+    """, (nom,campagne))
 
-    campagnes = cursor.fetchall()
+    client_info = cursor.fetchone()
 
-    # ==========================================================
-    # 2. INFORMATIONS GÉNÉRALES DU CLIENT
-    # ==========================================================
-    campagne_selected = request.args.get("campagne")
+    # Si le client n'existe pas pour cette campagne
+    if not client_info:
+        cursor.close()
+        conn.close()
+        return redirect("/clients")
 
-    # Si aucune campagne n'est sélectionnée,
-    # prendre la première campagne disponible
-    if not campagne_selected and campagnes:
-        campagne_selected = campagnes[0]["campagne"]
     # =========================================================
-    # 3. Récupérer les dernières données du client
+    # 2. Récupérer les dernières données du client
     #    pour la campagne sélectionnée
     # =========================================================
-    client_fiche = []
+    if search :
+        cursor.execute("""
+            SELECT * 
+            FROM fiche_client
+            WHERE client = %s
+            AND campagne = %s
+            AND date LIKE %s
+            ORDER BY date DESC
+        """, (nom, campagne, f"%{search}%"))
 
-    if campagne_selected:
+    else:
+        cursor.execute("""
+            SELECT *
+            FROM fiche_client
+            WHERE client = %s
+            AND campagne = %s
+            ORDER BY date ASC
+        """, (nom, campagne))
 
-        if search :
-            cursor.execute("""
-                SELECT * 
-                FROM fiche_client
-                WHERE client = %s
-                AND campagne = %s
-                AND date LIKE %s
-                ORDER BY date DESC
-                """, (nom, campagne_selected, f"%{search}%"))
-
-        else:
-            cursor.execute("""
-                SELECT *
-                FROM fiche_client
-                WHERE client = %s
-                AND campagne = %s
-                ORDER BY date ASC
-                """, (nom, campagne_selected))
-
-        client_fiche = cursor.fetchall()
+    client_fiche = cursor.fetchall()
 
     # =========================================================
-    # 4. Calculer les statistiques de la campagne
+    # 3. Calculer les statistiques de la campagne
     # =========================================================
     totals = {
                 "cumul": 0,
@@ -705,18 +698,7 @@ def select_client(nom):
         )
 
     # =========================================================
-    # 5. Récupérer les informations générales du client
-    # =========================================================
-    cursor.execute("""
-        SELECT * 
-        FROM client
-        WHERE nom = %s""", 
-        (nom,))
-    
-    client_info = cursor.fetchone()
-
-    # =========================================================
-    # 6. Récupérer la photo de l'utilisateur connecté
+    # 4. Récupérer la photo de l'utilisateur connecté
     # =========================================================
     cursor.execute("""
         SELECT photo
@@ -732,7 +714,7 @@ def select_client(nom):
 
     return render_template(
         "select_client.html",
-        nom_client = nom, campagnes = campagnes, campagne_selected = campagne_selected, client_info = client_info, totals=totals, client_select = client_fiche, user = session["user"],
+        campagne_selected = campagne, totals=totals, client_info = client_info, nom_client = nom,  client_select = client_fiche, user = session["user"],
         role = session["role"], format_number=format_number, format_number_after=format_number_after, photo=user_photo["photo"] if user_photo else None)
 @app.route("/clients/<nom>")
 def voir_client(nom):
@@ -774,7 +756,7 @@ def delete_client_fiche(id):
     cursor.close()
     conn.close()
     flash("Fiche Client supprimée avec succès ✅", "success")
-    return redirect(url_for("select_client", nom = client_nom))
+    return redirect(url_for("select_client", nom = client_nom, campagne = campagne))
 
 @app.route("/clients/edit_fiche/<int:id>", methods = ["GET"])
 def edit_fiche_client(id):
@@ -824,7 +806,7 @@ def update_fiche_client(id):
     conn.commit()
     recalculate_fiche_client(client_nom, campagne)
     flash("Fiche Client modifiée avec succès ✅", "success")
-    return redirect(url_for("select_client", nom = client_nom))
+    return redirect(url_for("select_client", nom = client_nom, campagne = campagne))
 @app.route("/clients/fiche_clients/add", methods=["POST"])
 def add_fiche_client():
     nom = request.form["client"]
@@ -890,7 +872,7 @@ def add_fiche_client():
             sac_restant,montant, campagne))
 
     conn.commit()
-    return redirect(url_for("select_client", nom = nom))
+    return redirect(url_for("select_client", nom = nom, campagne = campagne))
 @app.route("/clients/export/excel")
 def export_clients_excel():
 
@@ -1275,8 +1257,8 @@ def update_pisteur(id):
     conn.commit()
     flash("Pisteur modifié avec succès ✅", "success")
     return redirect("/pisteurs")
-@app.route("/pisteurs/select/<string:nom>", methods=["GET"])
-def select_pisteur(nom):
+@app.route("/pisteurs/select/<string:nom>/<string:campagne>", methods=["GET"])
+def select_pisteur(nom, campagne):
     if "user" not in session:
         return redirect("/")
     search = request.args.get("search", "").strip()
@@ -1285,55 +1267,46 @@ def select_pisteur(nom):
     cursor = conn.cursor(dictionary=True, buffered= True)
 
     # =========================================================
-    # 1. Récupérer les campagnes disponibles pour CE client
+    # 1. Récupérer les informations générales du pisteur
     # =========================================================
     cursor.execute("""
-        SELECT DISTINCT campagne
-        FROM fiche_pisteur
-        WHERE pisteur = %s
-        ORDER BY campagne DESC""", (nom,))
-    campagnes = cursor.fetchall()
+        SELECT *
+        FROM pisteur
+        WHERE nom = %s
+        AND campagne = %s 
+    """, (nom, campagne))
+    pisteur_info = cursor.fetchone()
+
+    # Si le pisteur n'existe pas pour cette campagne
+    if not pisteur_info:
+        cursor.close()
+        conn.close()
+        return redirect("/pisteurs")
 
     # =========================================================
-    # 2. Récupérer la campagne sélectionnée
-    # =========================================================
-    #campagne_selected = pisteur_info["campagne"]
-    campagne_selected = request.args.get("campagne")
-
-    # Si aucune campagne n'est sélectionnée,
-    # prendre la première campagne disponible
-    if not campagne_selected and campagnes:
-        campagne_selected = campagnes[0]["campagne"]
-
-    # =========================================================
-    # 3. Récupérer les dernières données du client
+    # 2. Récupérer les dernières données du client
     #    pour la campagne sélectionnée
     # =========================================================
-    pisteur_fiche = []
-
-    if campagne_selected:
-
-        if search:
-            cursor.execute("""
-                SELECT * 
-                FROM fiche_pisteur
-                WHERE pisteur = %s
-                AND campagne = %s
-                AND date LIKE %s
-                ORDER BY date DESC
-            """, (nom, campagne_selected, f"%{search}"))
-            pisteur_fiche = cursor.fetchall()
-
-        else:
-            cursor.execute("""
-                SELECT *
-                FROM fiche_pisteur
-                WHERE pisteur = %s
-                AND campagne = %s
-                ORDER BY date ASC""",(nom, campagne_selected))
-            pisteur_fiche = cursor.fetchall()
+    if search:
+        cursor.execute("""
+            SELECT * 
+            FROM fiche_pisteur
+            WHERE pisteur = %s
+            AND campagne = %s
+            AND date LIKE %s
+            ORDER BY date DESC
+        """, (nom, campagne, f"%{search}"))
+    else:
+        cursor.execute("""
+            SELECT *
+            FROM fiche_pisteur
+            WHERE pisteur = %s
+            AND campagne = %s
+            ORDER BY date ASC""",(nom, campagne))
+        
+    pisteur_fiche = cursor.fetchall()
     # =========================================================
-    # 4. Calculer les statistiques de la campagne
+    # 3. Calculer les statistiques de la campagne
     # =========================================================
     totals = {
         "poids": 0,
@@ -1362,24 +1335,21 @@ def select_pisteur(nom):
         
         totals["sac"] = clean_number(
             derniere_ligne.get("sac_restant"))
+
     # =========================================================
-    # 5. Récupérer les informations générales du client
+    # 4. Récupérer la photo de l'utilisateur connecté
     # =========================================================
     cursor.execute("""
-        SELECT *
-        FROM pisteur
-        WHERE nom = %s
-    """, (nom,))
-        
-    pisteur_info = cursor.fetchone()
-
-    # =========================================================
-    # 6. Récupérer la photo de l'utilisateur connecté
-    # =========================================================
-    cursor.execute("""SELECT photo FROM utilisateur WHERE username = %s""", (session["user"],))
+        SELECT photo
+        FROM utilisateur
+        WHERE username = %s
+    """, (session["user"],))
     user_photo = cursor.fetchone()
 
-    return render_template("select_pisteur.html",campagnes = campagnes, campagne_selected = campagne_selected, totals = totals, pisteur_info = pisteur_info, nom_pisteur = nom, pisteur_select = pisteur_fiche, user = session["user"],
+    cursor.close()
+    conn.close()
+
+    return render_template("select_pisteur.html",campagne_selected = campagne, totals = totals, pisteur_info = pisteur_info, nom_pisteur = nom, pisteur_select = pisteur_fiche, user = session["user"],
         role=session["role"], format_number = clean_number, format_number_after = format_number_after, photo = user_photo["photo"] if user_photo else None)
 @app.route("/pisteurs/<nom>")
 def voir_pisteur(nom):
@@ -1421,7 +1391,7 @@ def delete_pisteur_fiche(id):
     cursor.close()
     conn.close()
     flash("Fiche Pisteur supprimée avec succès ✅", "success")
-    return redirect(url_for("select_pisteur", nom=pisteur_nom))
+    return redirect(url_for("select_pisteur", nom = pisteur_nom, campagne = campagne))
 
 @app.route("/pisteurs/edit_fiche/<int:id>", methods=["GET"])
 def edit_fiche_pisteur(id):
@@ -1436,14 +1406,13 @@ def edit_fiche_pisteur(id):
 def update_fiche_pisteur(id):
     date = request.form["date"]
 
-    prix = int(request.form["prix"])
-    poids_net = int(request.form["poids_net"])
+    prix = int(request.form["prix"].replace(" ", ""))
+    poids_net = int(request.form["poids_net"].replace(" ", ""))
 
-    debit = int(request.form["debit"])
-    #credit = int(request.form["credit"])
+    debit = int(request.form["debit"].replace(" ", ""))
 
-    sac_reçu = int(request.form["sac_reçu"])
-    sac_livre = int(request.form["sac_livre"])
+    sac_reçu = int(request.form["sac_reçu"].replace(" ", ""))
+    sac_livre = int(request.form["sac_livre"].replace(" ", ""))
 
     detail = request.form["detail"]
     campagne = request.form["campagne"]
@@ -1472,7 +1441,7 @@ def update_fiche_pisteur(id):
     conn.commit()
     recalculate_fiche_pisteur(pisteur_nom, campagne)
     flash("Fiche Pisteur modifiée avec succès ✅", "success")
-    return redirect(url_for("select_pisteur", nom = pisteur_nom))
+    return redirect(url_for("select_pisteur", nom = pisteur_nom, campagne = campagne))
 
 @app.route("/pisteurs/fiche_pisteur/add", methods = ["POST"])
 def add_fiche_pisteur():
@@ -1549,7 +1518,7 @@ def add_fiche_pisteur():
 
     flash("Fiche ajoutée avec succès ✅", "success")
 
-    return redirect(url_for("select_pisteur", nom = pisteur))
+    return redirect(url_for("select_pisteur", nom = pisteur, campagne = campagne))
 @app.route("/pisteurs/export/excel")
 def export_pisteurs_excel():
 
